@@ -7,10 +7,114 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum UserRole {
+  ADMIN
+  REQUESTER
+  MARKETING_MANAGER
+}
+
+enum CampaignStatus {
+  DRAFT
+  OPEN
+  IN_ANALYSIS
+  IN_PROGRESS
+  WAITING_REQUESTER
+  WAITING_APPROVAL
+  COMPLETED
+  CANCELLED
+}
+
+enum CampaignPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum CampaignActivityType {
+  CREATED
+  UPDATED
+  STATUS_CHANGED
+  PRIORITY_CHANGED
+  ASSIGNED
+  UNASSIGNED
+  DUE_DATE_CHANGED
+  CANCELLED
+  REOPENED
+  COMPLETED
+}
+
 model User {
-  id        String   @id @default(uuid())
-  name      String
-  email     String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                   String             @id @default(uuid())
+  name                 String
+  email                String             @unique
+  passwordHash         String
+  role                 UserRole           @default(REQUESTER)
+  active               Boolean            @default(true)
+  refreshTokens        RefreshToken[]
+  requestedCampaigns   Campaign[]         @relation("CampaignRequester")
+  managedCampaigns     Campaign[]         @relation("CampaignMarketingManager")
+  campaignActivities   CampaignActivity[]
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid())
+  tokenHash String    @unique
+  expiresAt DateTime
+  revokedAt DateTime?
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model Campaign {
+  id                 String             @id @default(uuid())
+  title              String
+  description        String
+  objective          String?
+  priority           CampaignPriority   @default(MEDIUM)
+  status             CampaignStatus     @default(OPEN)
+  startsAt           DateTime?
+  dueAt              DateTime?
+  completedAt        DateTime?
+  cancelledAt        DateTime?
+  cancellationReason String?
+
+  requesterId String
+  requester   User @relation("CampaignRequester", fields: [requesterId], references: [id])
+
+  marketingManagerId String?
+  marketingManager   User?   @relation("CampaignMarketingManager", fields: [marketingManagerId], references: [id])
+
+  createdAt  DateTime            @default(now())
+  updatedAt  DateTime            @updatedAt
+  activities CampaignActivity[]
+
+  @@index([requesterId])
+  @@index([marketingManagerId])
+  @@index([status])
+  @@index([priority])
+  @@index([createdAt])
+  @@index([dueAt])
+}
+
+model CampaignActivity {
+  id          String               @id @default(uuid())
+  type        CampaignActivityType
+  description String
+  metadata    Json?
+  campaignId  String
+  campaign    Campaign             @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  actorId     String
+  actor       User                 @relation(fields: [actorId], references: [id])
+  createdAt   DateTime             @default(now())
+
+  @@index([campaignId])
+  @@index([actorId])
+  @@index([createdAt])
 }
