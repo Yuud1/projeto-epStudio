@@ -10,12 +10,19 @@ import {
 import type { CreateUserBody, UpdateUserBody } from "./users.schemas.js";
 import { toUserListItem, type UserListItem } from "./users.types.js";
 
-export async function listUsers(): Promise<UserListItem[]> {
-  const users = await prisma.user.findMany({
-    orderBy: { createdAt: "asc" },
+export async function listAssignableUsers(): Promise<
+  Array<{ id: string; name: string; email: string; role: string }>
+> {
+  return prisma.user.findMany({
+    where: {
+      active: true,
+      role: {
+        in: ["DESIGNER", "CONTENT_CREATOR", "SOCIAL_MEDIA", "MARKETING_MANAGER"],
+      },
+    },
+    select: { id: true, name: true, email: true, role: true },
+    orderBy: { name: "asc" },
   });
-
-  return users.map(toUserListItem);
 }
 
 export async function getUserById(id: string): Promise<UserListItem> {

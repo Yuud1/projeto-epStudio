@@ -11,6 +11,9 @@ export const userRoleSchema = z.enum([
   "ADMIN",
   "REQUESTER",
   "MARKETING_MANAGER",
+  "DESIGNER",
+  "CONTENT_CREATOR",
+  "SOCIAL_MEDIA",
 ]);
 
 export const createUserBodySchema = z.object({

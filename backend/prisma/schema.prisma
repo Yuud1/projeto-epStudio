@@ -11,6 +11,9 @@ enum UserRole {
   ADMIN
   REQUESTER
   MARKETING_MANAGER
+  DESIGNER
+  CONTENT_CREATOR
+  SOCIAL_MEDIA
 }
 
 enum CampaignStatus {
@@ -44,6 +47,36 @@ enum CampaignActivityType {
   COMPLETED
 }
 
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  BLOCKED
+  IN_REVIEW
+  DONE
+  CANCELLED
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum TaskActivityType {
+  CREATED
+  UPDATED
+  STATUS_CHANGED
+  PRIORITY_CHANGED
+  DUE_DATE_CHANGED
+  ASSIGNED
+  UNASSIGNED
+  POSITION_CHANGED
+  CANCELLED
+  COMPLETED
+  REOPENED
+}
+
 model User {
   id                   String             @id @default(uuid())
   name                 String
@@ -55,6 +88,10 @@ model User {
   requestedCampaigns   Campaign[]         @relation("CampaignRequester")
   managedCampaigns     Campaign[]         @relation("CampaignMarketingManager")
   campaignActivities   CampaignActivity[]
+  createdTasks         Task[]             @relation("TaskCreator")
+  taskAssignments      TaskAssignee[]     @relation("TaskAssigneeUser")
+  assignedTasksByMe    TaskAssignee[]     @relation("TaskAssignedBy")
+  taskActivities       TaskActivity[]
   createdAt            DateTime           @default(now())
   updatedAt            DateTime           @updatedAt
 }
@@ -94,6 +131,7 @@ model Campaign {
   createdAt  DateTime            @default(now())
   updatedAt  DateTime            @updatedAt
   activities CampaignActivity[]
+  tasks      Task[]
 
   @@index([requesterId])
   @@index([marketingManagerId])
@@ -115,6 +153,69 @@ model CampaignActivity {
   createdAt   DateTime             @default(now())
 
   @@index([campaignId])
+  @@index([actorId])
+  @@index([createdAt])
+}
+
+model Task {
+  id                 String       @id @default(uuid())
+  title              String
+  description        String?
+  status             TaskStatus   @default(TODO)
+  priority           TaskPriority @default(MEDIUM)
+  position           Int          @default(0)
+  dueAt              DateTime?
+  startedAt          DateTime?
+  completedAt        DateTime?
+  cancelledAt        DateTime?
+  cancellationReason String?
+
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  createdById String
+  createdBy   User   @relation("TaskCreator", fields: [createdById], references: [id])
+
+  assignees  TaskAssignee[]
+  activities TaskActivity[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([campaignId])
+  @@index([status])
+  @@index([priority])
+  @@index([dueAt])
+  @@index([position])
+}
+
+model TaskAssignee {
+  id           String   @id @default(uuid())
+  taskId       String
+  task         Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User     @relation("TaskAssigneeUser", fields: [userId], references: [id], onDelete: Cascade)
+  assignedById String
+  assignedBy   User     @relation("TaskAssignedBy", fields: [assignedById], references: [id])
+  assignedAt   DateTime @default(now())
+
+  @@unique([taskId, userId])
+  @@index([taskId])
+  @@index([userId])
+}
+
+model TaskActivity {
+  id          String           @id @default(uuid())
+  type        TaskActivityType
+  description String
+  metadata    Json?
+  taskId      String
+  task        Task             @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  actorId     String
+  actor       User             @relation(fields: [actorId], references: [id])
+  createdAt   DateTime         @default(now())
+
+  @@index([taskId])
   @@index([actorId])
   @@index([createdAt])
 }

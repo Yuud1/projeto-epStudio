@@ -43,6 +43,24 @@ describe("Authentication API", () => {
     const inactiveHash = await argon2.hash("Inactive@123");
 
     await prisma.refreshToken.deleteMany();
+    await prisma.taskActivity.deleteMany();
+    await prisma.taskAssignee.deleteMany();
+    await prisma.task.deleteMany();
+    await prisma.campaignActivity.deleteMany();
+    await prisma.campaign.deleteMany({
+      where: {
+        requester: {
+          email: {
+            in: [
+              "admin@epstudio.local",
+              "gerente@epstudio.local",
+              "inactive@epstudio.local",
+              "designer-test@epstudio.local",
+            ],
+          },
+        },
+      },
+    });
     await prisma.user.deleteMany({
       where: {
         email: {
@@ -101,6 +119,24 @@ describe("Authentication API", () => {
 
   afterAll(async () => {
     await prisma.refreshToken.deleteMany();
+    await prisma.taskActivity.deleteMany();
+    await prisma.taskAssignee.deleteMany();
+    await prisma.task.deleteMany();
+    await prisma.campaignActivity.deleteMany();
+    await prisma.campaign.deleteMany({
+      where: {
+        requester: {
+          email: {
+            in: [
+              "admin@epstudio.local",
+              "gerente@epstudio.local",
+              "inactive@epstudio.local",
+              "designer-test@epstudio.local",
+            ],
+          },
+        },
+      },
+    });
     await prisma.user.deleteMany({
       where: {
         email: {

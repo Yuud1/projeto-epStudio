@@ -14,6 +14,14 @@ export async function listUsersHandler(
   return reply.send({ users });
 }
 
+export async function listAssignableUsersHandler(
+  _request: FastifyRequest,
+  reply: FastifyReply,
+) {
+  const users = await usersService.listAssignableUsers();
+  return reply.send({ users });
+}
+
 export async function getUserHandler(
   request: FastifyRequest,
   reply: FastifyReply,

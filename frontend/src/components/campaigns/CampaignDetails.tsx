@@ -12,6 +12,7 @@ import { AssignCampaignDialog } from "@/components/campaigns/AssignCampaignDialo
 import { CancelCampaignDialog } from "@/components/campaigns/CancelCampaignDialog";
 import { CampaignPriorityBadge } from "@/components/campaigns/CampaignPriorityBadge";
 import { CampaignStatusBadge } from "@/components/campaigns/CampaignStatusBadge";
+import { CampaignTasksSection } from "@/components/campaigns/CampaignTasksSection";
 import { CampaignTimeline } from "@/components/campaigns/CampaignTimeline";
 import { ChangeStatusDialog } from "@/components/campaigns/ChangeStatusDialog";
 import { useAuth } from "@/hooks/useAuth";
@@ -229,6 +230,8 @@ export function CampaignDetails({
           <CampaignTimeline activities={campaign.activities} />
         </CardContent>
       </Card>
+
+      <CampaignTasksSection campaign={campaign} />
 
       <CancelCampaignDialog
         open={cancelOpen}

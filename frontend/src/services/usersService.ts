@@ -10,6 +10,15 @@ export async function listUsersRequest(): Promise<UserListItem[]> {
   return data.users;
 }
 
+export async function listAssignableUsersRequest(): Promise<
+  Array<{ id: string; name: string; email: string; role: string }>
+> {
+  const data = await apiRequest<{
+    users: Array<{ id: string; name: string; email: string; role: string }>;
+  }>("/users/assignable");
+  return data.users;
+}
+
 export async function createUserRequest(
   input: CreateUserInput,
 ): Promise<UserListItem> {

@@ -6,6 +6,7 @@ import jwtPlugin from "./plugins/jwt.js";
 import authPlugin from "./plugins/auth.js";
 import { authRoutes } from "./modules/auth/auth.routes.js";
 import { campaignRoutes } from "./modules/campaigns/campaign.routes.js";
+import { taskRoutes } from "./modules/tasks/task.routes.js";
 import { usersRoutes } from "./modules/users/users.routes.js";
 import { healthRoutes } from "./routes/health.js";
 import { errorHandler } from "./shared/errors/error-handler.js";
@@ -30,6 +31,7 @@ export async function buildApp() {
   await app.register(authRoutes);
   await app.register(usersRoutes);
   await app.register(campaignRoutes);
+  await app.register(taskRoutes);
 
   return app;
 }

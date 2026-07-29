@@ -5,10 +5,33 @@ import * as usersController from "./users.controller.js";
 
 export async function usersRoutes(app: FastifyInstance) {
   app.addHook("preHandler", authenticate);
-  app.addHook("preHandler", authorize(["ADMIN"]));
 
-  app.get("/users", usersController.listUsersHandler);
-  app.get("/users/:id", usersController.getUserHandler);
-  app.post("/users", usersController.createUserHandler);
-  app.patch("/users/:id", usersController.updateUserHandler);
+  app.get(
+    "/users/assignable",
+    {
+      preHandler: [authorize(["ADMIN", "MARKETING_MANAGER"])],
+    },
+    usersController.listAssignableUsersHandler,
+  );
+
+  app.get(
+    "/users",
+    { preHandler: [authorize(["ADMIN"])] },
+    usersController.listUsersHandler,
+  );
+  app.get(
+    "/users/:id",
+    { preHandler: [authorize(["ADMIN"])] },
+    usersController.getUserHandler,
+  );
+  app.post(
+    "/users",
+    { preHandler: [authorize(["ADMIN"])] },
+    usersController.createUserHandler,
+  );
+  app.patch(
+    "/users/:id",
+    { preHandler: [authorize(["ADMIN"])] },
+    usersController.updateUserHandler,
+  );
 }

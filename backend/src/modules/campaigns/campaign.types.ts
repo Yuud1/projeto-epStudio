@@ -46,6 +46,11 @@ export type CampaignResponse = {
   cancellationReason: string | null;
   requester: CampaignUserSummary;
   marketingManager: CampaignUserSummary | null;
+  taskProgress: {
+    total: number;
+    completed: number;
+    percentage: number;
+  };
   createdAt: string;
   updatedAt: string;
 };
@@ -94,6 +99,11 @@ function toIso(value: Date | null): string | null {
 
 export function toCampaignResponse(
   campaign: CampaignWithRelations,
+  taskProgress: {
+    total: number;
+    completed: number;
+    percentage: number;
+  } = { total: 0, completed: 0, percentage: 0 },
 ): CampaignResponse {
   return {
     id: campaign.id,
@@ -119,6 +129,7 @@ export function toCampaignResponse(
           email: campaign.marketingManager.email,
         }
       : null,
+    taskProgress,
     createdAt: campaign.createdAt.toISOString(),
     updatedAt: campaign.updatedAt.toISOString(),
   };

@@ -23,6 +23,24 @@ const users = [
     password: "Marketing@123",
     role: UserRole.MARKETING_MANAGER,
   },
+  {
+    name: "Designer",
+    email: "designer@epstudio.local",
+    password: "Designer@123",
+    role: UserRole.DESIGNER,
+  },
+  {
+    name: "Criador de Conteúdo",
+    email: "conteudo@epstudio.local",
+    password: "Conteudo@123",
+    role: UserRole.CONTENT_CREATOR,
+  },
+  {
+    name: "Social Media",
+    email: "social@epstudio.local",
+    password: "Social@123",
+    role: UserRole.SOCIAL_MEDIA,
+  },
 ] as const;
 
 async function main() {
@@ -47,7 +65,7 @@ async function main() {
     });
   }
 
-  console.log("Seed concluído: 3 usuários de desenvolvimento prontos.");
+  console.log(`Seed concluído: ${users.length} usuários de desenvolvimento prontos.`);
 }
 
 main()

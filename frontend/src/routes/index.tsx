@@ -7,6 +7,8 @@ import { CreateCampaignPage } from "@/pages/Campaigns/CreateCampaignPage";
 import { DashboardPage } from "@/pages/Dashboard";
 import { LoginPage } from "@/pages/Login";
 import { NotFoundPage } from "@/pages/NotFound";
+import { MyTasksPage } from "@/pages/Tasks/MyTasksPage";
+import { TaskDetailsPage } from "@/pages/Tasks/TaskDetailsPage";
 import { UnauthorizedPage } from "@/pages/Unauthorized";
 import { UsersPage } from "@/pages/Users";
 import { ProtectedRoute } from "@/routes/ProtectedRoute";
@@ -34,6 +36,24 @@ export function AppRoutes() {
             <Route path="/campaigns/new" element={<CreateCampaignPage />} />
           </Route>
           <Route path="/campaigns/:id" element={<CampaignDetailsPage />} />
+
+          <Route
+            element={
+              <RoleRoute
+                roles={[
+                  "ADMIN",
+                  "MARKETING_MANAGER",
+                  "DESIGNER",
+                  "CONTENT_CREATOR",
+                  "SOCIAL_MEDIA",
+                ]}
+              />
+            }
+          >
+            <Route path="/tasks" element={<MyTasksPage />} />
+          </Route>
+          <Route path="/tasks/:id" element={<TaskDetailsPage />} />
+
           <Route path="/unauthorized" element={<UnauthorizedPage />} />
 
           <Route element={<RoleRoute roles={["ADMIN"]} />}>

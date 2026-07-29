@@ -223,5 +223,93 @@ export async function findMarketingManager(id: string) {
   });
 }
 
+export type TaskProgress = {
+  total: number;
+  completed: number;
+  percentage: number;
+};
+
+export function emptyTaskProgress(): TaskProgress {
+  return { total: 0, completed: 0, percentage: 0 };
+}
+
+export function computeTaskProgress(total: number, completed: number): TaskProgress {
+  if (total <= 0) {
+    return emptyTaskProgress();
+  }
+
+  return {
+    total,
+    completed,
+    percentage: Math.round((completed / total) * 100),
+  };
+}
+
+export async function getTaskProgress(campaignId: string): Promise<TaskProgress> {
+  const [total, completed] = await Promise.all([
+    prisma.task.count({
+      where: { campaignId, status: { not: "CANCELLED" } },
+    }),
+    prisma.task.count({
+      where: { campaignId, status: "DONE" },
+    }),
+  ]);
+
+  return computeTaskProgress(total, completed);
+}
+
+export async function getTaskProgressMap(
+  campaignIds: string[],
+): Promise<Map<string, TaskProgress>> {
+  const map = new Map<string, TaskProgress>();
+
+  if (campaignIds.length === 0) {
+    return map;
+  }
+
+  const tasks = await prisma.task.findMany({
+    where: {
+      campaignId: { in: campaignIds },
+      status: { not: "CANCELLED" },
+    },
+    select: { campaignId: true, status: true },
+  });
+
+  const totals = new Map<string, { total: number; completed: number }>();
+
+  for (const id of campaignIds) {
+    totals.set(id, { total: 0, completed: 0 });
+  }
+
+  for (const task of tasks) {
+    const current = totals.get(task.campaignId) ?? { total: 0, completed: 0 };
+    current.total += 1;
+    if (task.status === "DONE") {
+      current.completed += 1;
+    }
+    totals.set(task.campaignId, current);
+  }
+
+  for (const [id, value] of totals) {
+    map.set(id, computeTaskProgress(value.total, value.completed));
+  }
+
+  return map;
+}
+
+export async function userHasAssignedTaskInCampaign(
+  userId: string,
+  campaignId: string,
+): Promise<boolean> {
+  const count = await prisma.taskAssignee.count({
+    where: {
+      userId,
+      task: { campaignId },
+    },
+  });
+
+  return count > 0;
+}
+
 export { prisma };
 export type { CampaignPriority, CampaignStatus };

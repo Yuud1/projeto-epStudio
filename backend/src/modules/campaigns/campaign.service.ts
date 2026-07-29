@@ -122,10 +122,16 @@ export async function listCampaigns(
   }
 
   const { items, total } = await repository.listCampaigns(visibility, scopedQuery);
+  const progressMap = await repository.getTaskProgressMap(items.map((item) => item.id));
   const totalPages = total === 0 ? 0 : Math.ceil(total / scopedQuery.limit);
 
   return {
-    data: items.map(toCampaignResponse),
+    data: items.map((item) =>
+      toCampaignResponse(
+        item,
+        progressMap.get(item.id) ?? repository.emptyTaskProgress(),
+      ),
+    ),
     pagination: {
       page: scopedQuery.page,
       limit: scopedQuery.limit,
@@ -153,10 +159,19 @@ export async function getCampaignById(
   id: string,
 ): Promise<CampaignDetailResponse> {
   const campaign = await repository.findCampaignDetail(id);
-  assertCanView(user, campaign);
+  const hasAssignedTask =
+    user.role === "DESIGNER" ||
+    user.role === "CONTENT_CREATOR" ||
+    user.role === "SOCIAL_MEDIA"
+      ? await repository.userHasAssignedTaskInCampaign(user.sub, id)
+      : false;
+
+  assertCanView(user, campaign, { hasAssignedTask });
+
+  const taskProgress = await repository.getTaskProgress(id);
 
   return {
-    ...toCampaignResponse(campaign),
+    ...toCampaignResponse(campaign, taskProgress),
     activities: campaign.activities.map(toActivityResponse),
   };
 }

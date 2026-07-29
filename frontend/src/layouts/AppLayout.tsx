@@ -2,6 +2,7 @@ import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import { OPERATIONAL_ROLES } from "@/types/auth";
 import { cn } from "@/lib/utils";
 
 const linkClass = ({ isActive }: { isActive: boolean }) =>
@@ -13,6 +14,12 @@ const linkClass = ({ isActive }: { isActive: boolean }) =>
 export function AppLayout() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+
+  const showTasks =
+    user &&
+    (user.role === "ADMIN" ||
+      user.role === "MARKETING_MANAGER" ||
+      OPERATIONAL_ROLES.includes(user.role));
 
   async function handleLogout() {
     await logout();
@@ -32,6 +39,11 @@ export function AppLayout() {
               <NavLink to="/campaigns" className={linkClass}>
                 Chamados
               </NavLink>
+              {showTasks ? (
+                <NavLink to="/tasks" className={linkClass}>
+                  Minhas tarefas
+                </NavLink>
+              ) : null}
               {user?.role === "ADMIN" && (
                 <NavLink to="/users" className={linkClass}>
                   Usuários

@@ -42,6 +42,11 @@ export interface Campaign {
   cancellationReason: string | null;
   requester: CampaignUserSummary;
   marketingManager: CampaignUserSummary | null;
+  taskProgress?: {
+    total: number;
+    completed: number;
+    percentage: number;
+  };
   createdAt: string;
   updatedAt: string;
 }

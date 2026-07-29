@@ -33,12 +33,29 @@ export function buildVisibilityWhere(
     };
   }
 
+  if (
+    user.role === "DESIGNER" ||
+    user.role === "CONTENT_CREATOR" ||
+    user.role === "SOCIAL_MEDIA"
+  ) {
+    return {
+      tasks: {
+        some: {
+          assignees: {
+            some: { userId: user.sub },
+          },
+        },
+      },
+    };
+  }
+
   return { id: "__none__" };
 }
 
 export function canViewCampaign(
   user: AuthenticatedUser,
-  campaign: Pick<Campaign, "requesterId" | "marketingManagerId" | "status">,
+  campaign: Pick<Campaign, "id" | "requesterId" | "marketingManagerId" | "status">,
+  options?: { hasAssignedTask?: boolean },
 ): boolean {
   if (user.role === "ADMIN") {
     return true;
@@ -56,14 +73,23 @@ export function canViewCampaign(
     return campaign.status === "OPEN" && campaign.marketingManagerId === null;
   }
 
+  if (
+    user.role === "DESIGNER" ||
+    user.role === "CONTENT_CREATOR" ||
+    user.role === "SOCIAL_MEDIA"
+  ) {
+    return Boolean(options?.hasAssignedTask);
+  }
+
   return false;
 }
 
 export function assertCanView(
   user: AuthenticatedUser,
   campaign: CampaignWithRelations | null,
+  options?: { hasAssignedTask?: boolean },
 ): asserts campaign is CampaignWithRelations {
-  if (!campaign || !canViewCampaign(user, campaign)) {
+  if (!campaign || !canViewCampaign(user, campaign, options)) {
     throw new NotFoundError(CAMPAIGN_MESSAGES.NOT_FOUND);
   }
 }
